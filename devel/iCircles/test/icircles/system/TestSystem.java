@@ -9,10 +9,11 @@ import static org.junit.Assert.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.UUID;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.StringTokenizer;
-import java.io.IOException;
+import java.io.*;
 
 public class TestSystem {
 
@@ -256,7 +257,7 @@ public class TestSystem {
     private ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    public void testOne() {
+    public void testSystem() {
         for(TestSystem.TestDatum datum : testData) {
             AbstractDescription ad = null;
             try {
@@ -271,8 +272,28 @@ public class TestSystem {
             try {
                 // arbitrary canvas size
                 ConcreteDiagram cd = dc.createDiagram(200);
+                try {
                 // Eplsilon value from Jean's original TestCode.java
                 assertEquals(datum.getChecksum(), cd.checksum(), 0.001);
+                } catch (AssertionError ae) {
+                    // This is a hack to save the current diagram if
+                    // assertEquals fails
+                    PrintStream out = null;
+                    try {
+                        String tmpFileName = UUID.randomUUID().toString() + ".svg";
+                        out = new PrintStream(new FileOutputStream(tmpFileName));
+                        CirclesSVGGenerator csg = new CirclesSVGGenerator(cd);
+                        out.print(csg.toString());
+                    } catch (FileNotFoundException fnfe) {
+                        // do nothing
+                    }
+                    finally {
+                        if (out != null) out.close();
+                    }
+
+                    // rethrow the AssertionError
+                    throw ae;
+                }
             } catch (CannotDrawException cde) {
             	// Diagrams throwing CannotDrawException have an expected
                 // checksum of 0.0

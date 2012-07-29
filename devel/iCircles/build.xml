@@ -84,7 +84,9 @@ Build, test, run and package iCricles.
 
     <target name="run-test" depends="test"
             description="run the project tests" >
-      <junit printsummary="yes" fork="yes" haltonfailure="yes">
+      <!-- don't halt on failure so that we can serialise all failing
+           SVG examples -->
+      <junit printsummary="yes" fork="yes" haltonfailure="no">
         <classpath refid="classpath.test" />
 
         <formatter type="plain"/>
